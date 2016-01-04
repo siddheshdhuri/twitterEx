@@ -1,0 +1,16 @@
+Package: twitterEx
+Type: Package
+Title: Basic API for getting Twitter data for a given user
+Version: 0.1
+Date: 2016-01-01
+Author: Siddhesh Dhuri
+Maintainer: Siddhesh Dhuri <siddhesh.s.dhuri@gmail.com>
+Description: This package provides basic API for getting information from
+    twitter using the twitteR api
+License: Open
+LazyData: TRUE
+Imports:
+    twitteR,
+    httr,
+    stringr
+RoxygenNote: 5.0.1
