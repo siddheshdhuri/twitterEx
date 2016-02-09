@@ -220,40 +220,102 @@ getUserData <- function(userFile){
 
 
 
+#' Function to get tweets as clean data.frame for a list of users
+#'
+#' @param usernames vector of one or more usernames
+#' @return tweets.df a data.frame with tweets details
+#'
+#' @export
+getUserTweetsDataFrame <- function(usernames){
+  print(usernames)
+  tweettext <- c()
+  user <- c()
+  tweetcreated <- c()
+  tweetdate <- c()
+  favCount <- c()
+  retweetCount <- c()
+  reach <- c()
+
+  for(username in usernames){
+
+    # Fetch user tweets information
+    tweets <- twitteR::userTimeline(username, 100)
+
+    tweettext=c(tweettext,
+                sapply(tweets, function(x) x$getText()))
+    # Encode text to UTF-8 encoding
+    stri_enc_mark(tweettext)
+    tweettext <- stri_encode(tweettext, "", "UTF-8")
+
+    user <- c(user, rep(username,length(tweettext)))
+    
+    tweetcreated <- c(tweetcreated,
+                      unlist(lapply(tweets, function(x) as.character(x$getCreated()))))
+
+    tweetdate <- c(tweetdate,
+                   as.Date(tweetcreated))
+
+    favCount <- c(favCount,
+                  as.numeric(unlist(sapply(tweets, function(x) x$getFavoriteCount()))))
+
+    retweetCount <- c(retweetCount,
+                      as.numeric(unlist(sapply(tweets, function(x) x$getRetweetCount()))))
+
+    # assigning higher weight to retweet as it will proliferate trend
+    reach <- c(reach, (favCount + 2*retweetCount))
+
+  }
+
+  options(stringsAsFactors = FALSE)
+
+  tweets.df <- as.data.frame(cbind(tweet=tweettext,
+                                   user = user
+                                   tweetcreated=tweetcreated,
+                                   tweetdate = tweetdate,
+                                   favCount = favCount,
+                                   retweetCount = retweetCount,
+                                   reach = reach))
+
+  tweets.df$tweetdate <- as.Date(as.numeric(tweets.df$tweetdate), origin="1970-01-01")
+  tweets.df$favCount <- as.numeric(tweets.df$favCount)
+  tweets.df$retweetCount <- as.numeric(tweets.df$retweetCount)
+  tweets.df$reach <- as.numeric(tweets.df$reach)
+
+  return(tweets.df)
+
+}
+
 #' Function to get tweets as clean data.frame from a tweets object
 #'
-#' @param tweets object extracted using the twitteR search
-#' @return tweets.df a data.frame with tweets detail
+#' @param tweets collection object returned by twitteR::search
+#' @return tweets.df a data.frame with tweets details
 #'
 #' @export
 getTweetsDataFrame <- function(tweets){
-  
+
   tweettext=sapply(tweets, function(x) x$getText())
-  
+
   stri_enc_mark(tweettext)
   tweettext <- stri_encode(tweettext, "", "UTF-8")
-  
+
   tweetid=sapply(tweets, function(x) x$getId())
-  
+
   tweetlat=unlist(sapply(tweets, function(x) as.numeric(as.character(x$getLatitude()))))
-  
+
   tweetlon=unlist(sapply(tweets, function(x) as.numeric(as.character(x$getLongitude()))))
-  
+
   tweetcreated =unlist(lapply(tweets, function(x) as.character(x$getCreated())))
-  
-  #tweetdate = unlist(sapply(tweetdate, function(x) strptime(x, "%Y-%m-%d %H:%M:%S", tz = "GMT") ))
+
   tweetuser=unlist(sapply(tweets, function(x) x$getScreenName()))
-  
+
   favCount <- unlist(sapply(tweets, function(x) x$getFavoriteCount()))
-  
+
   retweetCount <- unlist(sapply(tweets, function(x) x$getRetweetCount()))
-  
+
   tweets.df = as.data.frame(cbind(tweetid= tweetid, tweet=tweettext,tweetcreated=tweetcreated,
                                   lat=tweetlat,lon=tweetlon, user=tweetuser,
                                   favCount = favCount, retweetCount = retweetCount))
-  
-  
-  return(tweets.df)
-  
-}
 
+  return(tweets.df)
+
+}
