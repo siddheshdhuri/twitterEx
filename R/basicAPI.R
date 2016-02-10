@@ -41,7 +41,7 @@ getUserInfo <- function(username){
 #' @return vector of first degree followers for the user
 #'
 #' @export
-getUserFollowers <- function(userInfo){
+getUserFollowers <- function(userInfo, n=100){
 
   if(class(userInfo)=="character") {
     userInfo <- getUserInfo(userInfo)
@@ -53,7 +53,7 @@ getUserFollowers <- function(userInfo){
     status <- as.numeric(rate[rate$resource == "/users/lookup","remaining"]) > 50
     if (status) {
       cat('Extracting...\n')
-      firstdegree <- userInfo$getFollowers()
+      firstdegree <- userInfo$getFollowers(n)
     } else {
       cat("Waiting...\n")
       Sys.sleep(600)
@@ -248,7 +248,7 @@ getUserTweetsDataFrame <- function(usernames){
     tweettext <- stri_encode(tweettext, "", "UTF-8")
 
     user <- c(user, rep(username,length(tweettext)))
-    
+
     tweetcreated <- c(tweetcreated,
                       unlist(lapply(tweets, function(x) as.character(x$getCreated()))))
 
@@ -269,7 +269,7 @@ getUserTweetsDataFrame <- function(usernames){
   options(stringsAsFactors = FALSE)
 
   tweets.df <- as.data.frame(cbind(tweet=tweettext,
-                                   user = user
+                                   user = user,
                                    tweetcreated=tweetcreated,
                                    tweetdate = tweetdate,
                                    favCount = favCount,
