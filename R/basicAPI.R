@@ -312,9 +312,10 @@ getTweetsDataFrame <- function(tweets){
 
   retweetCount <- unlist(sapply(tweets, function(x) x$getRetweetCount()))
 
-  tweets.df = as.data.frame(cbind(tweetid= tweetid, tweet=tweettext,tweetcreated=tweetcreated,
+  tweets.df = data.frame(cbind(tweetid= tweetid, tweet=tweettext,tweetcreated=tweetcreated,
                                   lat=tweetlat,lon=tweetlon, user=tweetuser,
-                                  favCount = favCount, retweetCount = retweetCount))
+                                  favCount = favCount, retweetCount = retweetCount),
+                         stringsAsFactors = FALSE)
 
   return(tweets.df)
 
