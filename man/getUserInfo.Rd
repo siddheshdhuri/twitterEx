@@ -2,10 +2,7 @@
 % Please edit documentation in R/basicAPI.R
 \name{getUserInfo}
 \alias{getUserInfo}
-\title{#########################################################################################
-basic api for twitter data exploration
-#########################################################################################
-Function to get user Info for a given user twitter handle}
+\title{Function to get user Info for a given user twitter handle}
 \usage{
 getUserInfo(username)
 }
@@ -16,9 +13,6 @@ getUserInfo(username)
 userInfo object with information about user
 }
 \description{
-#########################################################################################
-basic api for twitter data exploration
-#########################################################################################
 Function to get user Info for a given user twitter handle
 }
 

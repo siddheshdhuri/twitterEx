@@ -13,7 +13,7 @@
 #' @export
 getUserInfo <- function(username){
 
-  if(Sys.Date() > "2016-04-01") stop("This package has expired please contact siddhesh dhuri (siddhesh.s.dhuri@gmail.com) for update")
+  if(Sys.Date() > "2016-12-01") stop("This package has expired please contact siddhesh dhuri (siddhesh.s.dhuri@gmail.com) for update")
 
   username <- stringr::str_trim(username)
   status <- FALSE
@@ -300,13 +300,29 @@ getTweetsDataFrame <- function(tweets){
 
   tweetid=sapply(tweets, function(x) x$getId())
 
-  tweetlat=unlist(sapply(tweets, function(x) as.numeric(as.character(x$getLatitude()))))
-
-  tweetlon=unlist(sapply(tweets, function(x) as.numeric(as.character(x$getLongitude()))))
+#   tweetlat=unlist(sapply(tweets, function(x) as.numeric(as.character(x$getLatitude()))))
+#
+#   tweetlon=unlist(sapply(tweets, function(x) as.numeric(as.character(x$getLongitude()))))
 
   tweetcreated =unlist(lapply(tweets, function(x) as.character(x$getCreated())))
 
   tweetuser=unlist(sapply(tweets, function(x) x$getScreenName()))
+
+  tweetlat = NA
+  tweetlon = NA
+
+  result = tryCatch({
+
+    gc <- getUserLocation(tweetuser)
+    print(gc)
+    tweetlat <- gc$lat
+    tweetlon <- gc$lon
+
+  }, error = function(e) {
+      print(e)
+  })
+
+
 
   favCount <- unlist(sapply(tweets, function(x) x$getFavoriteCount()))
 
@@ -320,3 +336,20 @@ getTweetsDataFrame <- function(tweets){
   return(tweets.df)
 
 }
+
+#' Function to get tweets as clean data.frame from a tweets object
+#'
+#' @param user username of the twitter user
+#' @return geocode location
+#'
+#' @export
+getUserLocation <- function(users){
+
+  userobjs <- unlist(sapply(users, function(x) getUser(x)))
+
+  locations <- unlist(sapply(userobjs, function(x) x$location))
+
+  geocodes <- geocode(locations)
+
+}
+

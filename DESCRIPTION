@@ -12,5 +12,6 @@ LazyData: TRUE
 Imports:
     twitteR,
     httr,
-    stringr
+    stringr,
+    ggmap
 RoxygenNote: 5.0.1
