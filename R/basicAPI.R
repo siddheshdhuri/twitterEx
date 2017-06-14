@@ -314,9 +314,9 @@ getTweetsDataFrame <- function(tweets){
   result = tryCatch({
 
     gc <- getUserLocation(tweetuser)
-    print(gc)
-    tweetlat <- gc$lat
-    tweetlon <- gc$lon
+
+    tweetlat <- as.numeric(gc$lat)
+    tweetlon <- as.numeric(gc$lon)
 
   }, error = function(e) {
       print(e)
@@ -328,10 +328,18 @@ getTweetsDataFrame <- function(tweets){
 
   retweetCount <- unlist(sapply(tweets, function(x) x$getRetweetCount()))
 
+  # assigning higher weight to retweet as it will proliferate trend
+  reach <- favCount + 2*retweetCount
+
   tweets.df = data.frame(cbind(tweetid= tweetid, tweet=tweettext,tweetcreated=tweetcreated,
                                   lat=tweetlat,lon=tweetlon, user=tweetuser,
-                                  favCount = favCount, retweetCount = retweetCount),
+                                  favCount = favCount, retweetCount = retweetCount, reach=reach),
                          stringsAsFactors = FALSE)
+
+  #' type cast columns as numeric
+  tweets.df$favCount <- as.numeric(tweets.df$favCount)
+  tweets.df$retweetCount <- as.numeric(tweets.df$retweetCount)
+  tweets.df$reach <- as.numeric(tweets.df$reach)
 
   return(tweets.df)
 
@@ -353,3 +361,35 @@ getUserLocation <- function(users){
 
 }
 
+
+#' Function to get user interaction links from tweets
+#'
+#' @param tweets.df data.frame of tweet messages and users
+#' @return link.df data.frame of links between users
+#'
+#' @export
+getUserLinksFromTweets <- function(tweets.df){
+
+  options(stringsAsFactors = FALSE)
+
+  source.col <- NULL
+  target.col <- NULL
+  for(i in 1:nrow(tweets.df)){
+
+    source <- tweets.df$user[i]
+
+    targets <- unlist(str_extract_all(tweets.df$tweet[i], "@[:alnum:]+"))
+
+    for(target in targets){
+      source.col <- c(source.col,source)
+      target.col <- c(target.col,target)
+    }
+
+  }
+
+  source.col <- paste0("@",source.col)
+
+  links.df <- data.frame(source=source.col,
+                         target=target.col)
+
+}

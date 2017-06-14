@@ -4,7 +4,7 @@
 \alias{getUserFollowers}
 \title{Function to get followers for a given user twitter handle}
 \usage{
-getUserFollowers(userInfo)
+getUserFollowers(userInfo, n = 100)
 }
 \arguments{
 \item{userInfo}{user object of the user for whom followers need to be extracted}
