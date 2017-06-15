@@ -357,7 +357,18 @@ getUserLocation <- function(users){
 
   locations <- unlist(sapply(userobjs, function(x) x$location))
 
-  geocodes <- geocode(locations)
+  #' remove non-alphabetic characters
+  locations <- gsub(pattern = "[^[:alpha:]]", replacement = "", x = locations, ignore.case = TRUE)
+  
+  geocodes <- tryCatch({
+    
+    geocode(locations)
+    
+  }, error = function(e) {
+    print(e)
+  })
+  
+  return(geocodes)
 
 }
 
