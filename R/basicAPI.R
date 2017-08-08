@@ -262,7 +262,7 @@ getUserTweetsDataFrame <- function(usernames){
                       as.numeric(unlist(sapply(tweets, function(x) x$getRetweetCount()))))
 
     # assigning higher weight to retweet as it will proliferate trend
-    reach <- c(reach, (favCount + 2*retweetCount))
+    reach <- c(reach, (favCount + retweetCount))
 
   }
 
@@ -291,12 +291,15 @@ getUserTweetsDataFrame <- function(usernames){
 #' @return tweets.df a data.frame with tweets details
 #'
 #' @export
-getTweetsDataFrame <- function(tweets){
+getTweetsDataFrame <- function(tweets) {
 
   tweettext=sapply(tweets, function(x) x$getText())
 
   stri_enc_mark(tweettext)
   tweettext <- stri_encode(tweettext, "", "UTF-8")
+
+  #' replace & ampersand with & symbols
+  tweettext = gsub("&amp;", "", tweettext)
 
   tweetid=sapply(tweets, function(x) x$getId())
 
@@ -311,25 +314,13 @@ getTweetsDataFrame <- function(tweets){
   tweetlat = NA
   tweetlon = NA
 
-  result = tryCatch({
-
-    gc <- getUserLocation(tweetuser)
-
-    tweetlat <- as.numeric(gc$lat)
-    tweetlon <- as.numeric(gc$lon)
-
-  }, error = function(e) {
-      print(e)
-  })
-
-
 
   favCount <- unlist(sapply(tweets, function(x) x$getFavoriteCount()))
 
   retweetCount <- unlist(sapply(tweets, function(x) x$getRetweetCount()))
 
   # assigning higher weight to retweet as it will proliferate trend
-  reach <- favCount + 2*retweetCount
+  reach <- favCount + retweetCount
 
   tweets.df = data.frame(cbind(tweetid= tweetid, tweet=tweettext,tweetcreated=tweetcreated,
                                   lat=tweetlat,lon=tweetlon, user=tweetuser,
@@ -359,15 +350,15 @@ getUserLocation <- function(users){
 
   #' remove non-alphabetic characters
   locations <- gsub(pattern = "[^[:alpha:]]", replacement = "", x = locations, ignore.case = TRUE)
-  
+
   geocodes <- tryCatch({
-    
+
     geocode(locations)
-    
+
   }, error = function(e) {
     print(e)
   })
-  
+
   return(geocodes)
 
 }
