@@ -346,20 +346,41 @@ getUserLocation <- function(users){
 
   userobjs <- unlist(sapply(users, function(x) getUser(x)))
 
-  locations <- unlist(sapply(userobjs, function(x) x$location))
+  user <- unlist(sapply(userobjs, function(x) x$screenName))
+  name <- unlist(sapply(userobjs, function(x) x$name))
+  # Encode text to UTF-8 encoding
+  stri_enc_mark(name)
+  name <- stri_encode(name, "", "UTF-8")
+
+  followersCount <- unlist(sapply(userobjs, function(x) x$followersCount))
+  tweetsCount <- unlist(sapply(userobjs, function(x) x$statusesCount))
+  location <- unlist(sapply(userobjs, function(x) x$location))
+  # Encode text to UTF-8 encoding
+  stri_enc_mark(location)
+  location <- stri_encode(location, "", "UTF-8")
+
+  #locations <- unlist(sapply(userobjs, function(x) x$location))
 
   #' remove non-alphabetic characters
-  locations <- gsub(pattern = "[^[:alpha:]]", replacement = "", x = locations, ignore.case = TRUE)
+  location <- gsub(pattern = "[^[:alpha:]|^[:space:]]", replacement = "", x = location, ignore.case = TRUE)
+
+  user.df <- data.frame(cbind(user= user, name=name,followersCount=followersCount, tweetsCount = tweetsCount,
+                              location = location),
+                        stringsAsFactors = FALSE)
+
+  #user.df <- user.df %>% ggmap::mutate_geocode(location)
 
   geocodes <- tryCatch({
-
-    geocode(locations)
+    ggmap::geocode(user.df$location)
 
   }, error = function(e) {
     print(e)
   })
 
-  return(geocodes)
+  user.df$lon <- geocodes$lon
+  user.df$lat <- geocodes$lat
+
+  return(user.df)
 
 }
 
