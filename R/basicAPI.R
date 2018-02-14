@@ -13,7 +13,7 @@
 #' @export
 getUserInfo <- function(username){
 
-  if(Sys.Date() > "2017-12-31") stop("This package has expired please contact siddhesh dhuri (siddhesh.s.dhuri@gmail.com) for update")
+  if(Sys.Date() > "2019-12-31") stop("This package has expired please contact siddhesh dhuri (siddhesh.s.dhuri@gmail.com) for update")
 
   username <- stringr::str_trim(username)
   status <- FALSE
@@ -292,48 +292,48 @@ getUserTweetsDataFrame <- function(usernames){
 #'
 #' @export
 getTweetsDataFrame <- function(tweets) {
-  
+
   tweettext=sapply(tweets, function(x) x$getText())
-  
+
   stri_enc_mark(tweettext)
   tweettext <- stri_encode(tweettext, "", "UTF-8")
-  
+
   #' replace & ampersand with & symbols
   tweettext = gsub("&amp;", "", tweettext)
-  
+
   tweetid=sapply(tweets, function(x) x$getId())
-  
+
   #   tweetlat=unlist(sapply(tweets, function(x) as.numeric(as.character(x$getLatitude()))))
   #
   #   tweetlon=unlist(sapply(tweets, function(x) as.numeric(as.character(x$getLongitude()))))
-  
+
   tweetcreated =unlist(lapply(tweets, function(x) as.character(x$getCreated())))
-  
+
   tweetuser=unlist(sapply(tweets, function(x) x$getScreenName()))
-  
+
   favCount <- unlist(sapply(tweets, function(x) x$getFavoriteCount()))
-  
+
   retweetCount <- unlist(sapply(tweets, function(x) x$getRetweetCount()))
-  
+
   source <- unlist(sapply(tweets, function(x) x$getStatusSource()))
   #'remove surrounding html tags
   source <- gsub(pattern = "<.+\">|</a>",replacement = "",source)
-  
+
   # assigning higher weight to retweet as it will proliferate trend
   reach <- favCount + retweetCount
-  
+
   tweets.df = data.frame(cbind(tweetid= tweetid, tweet=tweettext,tweetcreated=tweetcreated, source = source,
                                favCount = favCount, retweetCount = retweetCount, reach=reach,
                                user=tweetuser),
                          stringsAsFactors = FALSE)
-  
+
   #' type cast columns as numeric
   tweets.df$favCount <- as.numeric(tweets.df$favCount)
   tweets.df$retweetCount <- as.numeric(tweets.df$retweetCount)
   tweets.df$reach <- as.numeric(tweets.df$reach)
-  
+
   return(tweets.df)
-  
+
 }
 
 #' Function to get tweets as clean data.frame from a tweets object
