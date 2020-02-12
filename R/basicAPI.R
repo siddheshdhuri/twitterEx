@@ -13,8 +13,6 @@
 #' @export
 getUserInfo <- function(username){
 
-  if(Sys.Date() > "2019-12-31") stop("This package has expired please contact siddhesh dhuri (siddhesh.s.dhuri@gmail.com) for update")
-
   username <- stringr::str_trim(username)
   status <- FALSE
   while (status==FALSE) {
