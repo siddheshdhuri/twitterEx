@@ -15,4 +15,3 @@ vector of first degree followers for the user
 \description{
 Function to get followers for a given user twitter handle
 }
-

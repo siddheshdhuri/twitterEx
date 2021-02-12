@@ -12,4 +12,3 @@ setupAuthentication(filepath)
 \description{
 Function to setup authentication
 }
-

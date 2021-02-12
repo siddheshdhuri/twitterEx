@@ -15,4 +15,3 @@ list of last n tweets by user
 \description{
 Function to get tweets for a given user twitter handle or userInfo object
 }
-

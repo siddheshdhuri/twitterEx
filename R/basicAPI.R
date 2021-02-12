@@ -414,3 +414,47 @@ getUserLinksFromTweets <- function(tweets.df){
                          target=target.col)
 
 }
+
+#' Function to get user interaction links from tweets
+#'
+#' @param tweets.df data.frame of tweet messages and users
+#' @return link.df data.frame of links between users
+#'
+#' @export
+getHastagUserLinks <- function (tweets.df) {
+  options(stringsAsFactors = FALSE)
+  source.col <- NULL
+  target.col <- NULL
+  for (i in 1:nrow(tweets.df)) {
+
+    tweet_user <- tweets.df$user[i]
+
+    tagged_users <- unlist(str_extract_all(tweets.df$tweet[i],
+                                           "@[:alnum:]+"))
+
+    hashtags <- unlist(str_extract_all(tweets.df$tweet[i],
+                                       "#[:alnum:]+"))
+    if (length(hashtags) > 0 ){
+      #' for each hashtag link tweet user to hashtag
+      for(hashtag in hashtags) {
+        source.col <- c(source.col, tweet_user)
+        target.col <- c(target.col, hashtag)
+        #' for each tagged user link hash tag with mentioned user
+        for(tagged_user in tagged_users){
+          source.col <- c(source.col, hashtag)
+          target.col <- c(target.col, tagged_user)
+        }
+      }
+    }else if(length(tagged_users) > 0){
+      #' for each tagged user link tweet user directly with mentioned user
+      for(tagged_user in tagged_users){
+        source.col <- c(source.col, tweet_user)
+        target.col <- c(target.col, tagged_user)
+      }
+    }
+
+  }
+
+  links.df <- data.frame(source = source.col, target = target.col)
+}
+

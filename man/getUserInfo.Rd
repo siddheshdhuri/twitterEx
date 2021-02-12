@@ -15,4 +15,3 @@ userInfo object with information about user
 \description{
 Function to get user Info for a given user twitter handle
 }
-

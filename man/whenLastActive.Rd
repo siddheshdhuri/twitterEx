@@ -15,4 +15,3 @@ time when user was last active
 \description{
 Function to get when was user last active
 }
-

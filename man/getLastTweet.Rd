@@ -15,4 +15,3 @@ time when user was last active
 \description{
 Function to get last tweet of user
 }
-

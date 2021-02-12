@@ -15,4 +15,3 @@ count of followers of this user
 \description{
 Function to get total number of followers for a user
 }
-
