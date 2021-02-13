@@ -14,4 +14,4 @@ Imports:
     httr,
     stringr,
     ggmap
-RoxygenNote: 6.0.1
+RoxygenNote: 7.1.0

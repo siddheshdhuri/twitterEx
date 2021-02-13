@@ -296,7 +296,7 @@ getTweetsDataFrame <- function(tweets) {
   stri_enc_mark(tweettext)
   tweettext <- stri_encode(tweettext, "", "UTF-8")
 
-  #' replace & ampersand with & symbols
+  # replace & ampersand with & symbols
   tweettext = gsub("&amp;", "", tweettext)
 
   tweetid=sapply(tweets, function(x) x$getId())
@@ -314,7 +314,7 @@ getTweetsDataFrame <- function(tweets) {
   retweetCount <- unlist(sapply(tweets, function(x) x$getRetweetCount()))
 
   source <- unlist(sapply(tweets, function(x) x$getStatusSource()))
-  #'remove surrounding html tags
+  # remove surrounding html tags
   source <- gsub(pattern = "<.+\">|</a>",replacement = "",source)
 
   # assigning higher weight to retweet as it will proliferate trend
@@ -325,7 +325,7 @@ getTweetsDataFrame <- function(tweets) {
                                user=tweetuser),
                          stringsAsFactors = FALSE)
 
-  #' type cast columns as numeric
+  # type cast columns as numeric
   tweets.df$favCount <- as.numeric(tweets.df$favCount)
   tweets.df$retweetCount <- as.numeric(tweets.df$retweetCount)
   tweets.df$reach <- as.numeric(tweets.df$reach)
@@ -359,7 +359,7 @@ getUserLocation <- function(users){
 
   #locations <- unlist(sapply(userobjs, function(x) x$location))
 
-  #' remove non-alphabetic characters
+  # remove non-alphabetic characters
   location <- gsub(pattern = "[^[:alpha:]|^[:space:]]", replacement = "", x = location, ignore.case = TRUE)
 
   user.df <- data.frame(cbind(user= user, name=name,followersCount=followersCount, tweetsCount = tweetsCount,
@@ -418,43 +418,167 @@ getUserLinksFromTweets <- function(tweets.df){
 #' Function to get user interaction links from tweets
 #'
 #' @param tweets.df data.frame of tweet messages and users
+#' @param exlclude_hashtags default FALSE, whether to include hashtags as nodes in network
 #' @return link.df data.frame of links between users
 #'
 #' @export
-getHastagUserLinks <- function (tweets.df) {
+getHastagUserLinks <- function (tweets.df, exlclude_hashtags=FALSE) {
   options(stringsAsFactors = FALSE)
   source.col <- NULL
   target.col <- NULL
-  for (i in 1:nrow(tweets.df)) {
 
-    tweet_user <- tweets.df$user[i]
+  if(exlclude_hashtags){
 
-    tagged_users <- unlist(str_extract_all(tweets.df$tweet[i],
-                                           "@[:alnum:]+"))
+    for (i in 1:nrow(tweets.df)) {
 
-    hashtags <- unlist(str_extract_all(tweets.df$tweet[i],
-                                       "#[:alnum:]+"))
-    if (length(hashtags) > 0 ){
-      #' for each hashtag link tweet user to hashtag
-      for(hashtag in hashtags) {
-        source.col <- c(source.col, tweet_user)
-        target.col <- c(target.col, hashtag)
-        #' for each tagged user link hash tag with mentioned user
+      tweet_user <- paste0('@',tweets.df$user[i])
+
+      tagged_users <- unlist(str_extract_all(tweets.df$tweet[i],
+                                             "@[:alnum:]+"))
+
+      if(length(tagged_users) > 0){
+        # for each tagged user link tweet user directly with mentioned user
         for(tagged_user in tagged_users){
-          source.col <- c(source.col, hashtag)
+          source.col <- c(source.col, tweet_user)
           target.col <- c(target.col, tagged_user)
         }
       }
-    }else if(length(tagged_users) > 0){
-      #' for each tagged user link tweet user directly with mentioned user
-      for(tagged_user in tagged_users){
-        source.col <- c(source.col, tweet_user)
-        target.col <- c(target.col, tagged_user)
+
+    }
+
+  }
+  else {
+
+    for (i in 1:nrow(tweets.df)) {
+
+      tweet_user <- paste0('@',tweets.df$user[i])
+
+      tagged_users <- unlist(str_extract_all(tweets.df$tweet[i],
+                                             "@[:alnum:]+"))
+
+      hashtags <- unlist(str_extract_all(tweets.df$tweet[i],
+                                         "#[:alnum:]+"))
+      if (length(hashtags) > 0 ){
+        # for each hashtag link tweet user to hashtag
+        for(hashtag in hashtags) {
+          source.col <- c(source.col, tweet_user)
+          target.col <- c(target.col, hashtag)
+          # for each tagged user link hash tag with mentioned user
+          for(tagged_user in tagged_users){
+            source.col <- c(source.col, hashtag)
+            target.col <- c(target.col, tagged_user)
+          }
+        }
+      }else if(length(tagged_users) > 0){
+        # for each tagged user link tweet user directly with mentioned user
+        for(tagged_user in tagged_users){
+          source.col <- c(source.col, tweet_user)
+          target.col <- c(target.col, tagged_user)
+        }
       }
+
     }
 
   }
 
   links.df <- data.frame(source = source.col, target = target.col)
+}
+
+
+#' Function to get nodes data.frame for network from tweets and links dataframes
+#'
+#' @param tweets.df data.frame of tweet messages and users
+#' @param links.df data.frame of links between users
+#'
+#' @return network.nodes.df dataframe of node in the network
+#'
+#' @export
+getNetworkNodesDF <- function(tweets.df, links.df){
+  # get nodes df from links.df
+  nodes <- as.data.frame(table(c(c(paste0("@",tweets.df$user), links.df$target))))
+  num.nodes <- nrow(nodes)
+
+  # nodes$color.background <- c("slategrey", "tomato", "gold")[nodes$media.type]
+  # nodes$color.border <- "black"
+  # nodes$color.highlight.background <- "orange"
+  # nodes$color.highlight.border <- "darkred"
+  options(stringsAsFactors = FALSE)
+  network.nodes.df <- data.frame(name=nodes$Var1,
+                                 size=nodes$Freq,
+                                 shape=ifelse(sapply(nodes$Var1, function(i) grepl('^@', i)), 'dot', 'text'),
+                                 shadow = TRUE,
+                                 #title=nodes$Var1, #' causes page to refresh
+                                 label = nodes$Var1,
+                                 borderWidth = 1,
+                                 group=ifelse(sapply(nodes$Var1, function(i) grepl('^@', i)), 'user', 'hashtag'),
+                                 id=0:(num.nodes-1)
+  )
+  network.nodes.df <- network.nodes.df %>% dplyr::arrange(desc(size))
+  return(network.nodes.df)
+}
+
+#' Function to get network links with node ids from nodes dataframe and links dataframe
+#'
+#' @param links.df data.frame of links between users
+#' @param network.nodes.df data.frame of nodes with ids
+#'
+#' @return network.links.df dataframe of links to plot network
+#'
+#' @export
+getNetworkLinksDF <- function(links.df, network.nodes.df){
+
+  # get links by node id from
+  links <- merge(links.df, network.nodes.df, by.x = "source", by.y = "name")
+
+  links <- merge(links, network.nodes.df, by.x="target", by.y="name")
+
+  # change column names
+  colnames(links) <- c("target","source","target.size","target.group","target.id","source.size","source.group","source.id")
+
+  # links.df for creating D3Network chart
+  # network.links.df <- data.frame(source=links$source.id,
+  #                                target=links$target.id,
+  #                                value=1)
+
+  # links.df for creating visNetwork chart
+  network.links.df <- data.frame(from=links$source.id,
+                                 to=links$target.id,
+                                 value=1)
+
+  return(network.links.df)
+}
+
+
+#' Function to get interaction network from tweets datafrae
+#'
+#' @param tweets.df data.frame of tweet messages and users
+#' @param exlclude_hashtags default FALSE, whether to include hashtags as nodes in network
+#'
+#' @return networkd.df dataframe of interaction network
+#'
+#' @export
+getTweetsInteractionNetwork <- function(tweets.df, exlclude_hashtags=FALSE){
+  # get links from tweets
+  links.df <- getHastagUserLinks(tweets.df)
+  # get nodes df from links
+  network.nodes.df <- getNetworkNodesDF(tweets.df,links.df)
+  # create network where nodes are ids (this is required for VisNetwork)
+  network.links.df <- getNetworkLinksDF(links.df,network.nodes.df[,c("name","size","group","id")])
+  network.links.df$value <- NULL
+
+  require(visNetwork)
+  network.df <- visNetwork(network.nodes.df, network.links.df) %>%
+                visGroups(groupname = "user", shape = "icon",
+                          icon = list(code = "f0c0", size = 75)) %>%
+                addFontAwesome() %>%
+                visIgraphLayout() %>%
+                visInteraction(navigationButtons = TRUE, hover = TRUE) %>%
+                visOptions(highlightNearest = list(enabled =TRUE, degree = 2)) %>%
+                visEvents(select = "function(nodes) {
+                            Shiny.onInputChange('current_node_id', nodes.nodes);
+                            ;}")
+
+  return(network.df)
+
 }
 

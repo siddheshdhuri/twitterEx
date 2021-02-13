@@ -4,10 +4,12 @@
 \alias{getHastagUserLinks}
 \title{Function to get user interaction links from tweets}
 \usage{
-getHastagUserLinks(tweets.df)
+getHastagUserLinks(tweets.df, exlclude_hashtags = FALSE)
 }
 \arguments{
 \item{tweets.df}{data.frame of tweet messages and users}
+
+\item{exlclude_hashtags}{default FALSE, whether to include hashtags as nodes in network}
 }
 \value{
 link.df data.frame of links between users
