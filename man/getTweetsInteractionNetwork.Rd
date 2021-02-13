@@ -12,7 +12,7 @@ getTweetsInteractionNetwork(tweets.df, exlclude_hashtags = FALSE)
 \item{exlclude_hashtags}{default FALSE, whether to include hashtags as nodes in network}
 }
 \value{
-networkd.df dataframe of interaction network
+list containing visualisation netwrork and the network.nodes dataframe of interaction network
 }
 \description{
 Function to get interaction network from tweets datafrae

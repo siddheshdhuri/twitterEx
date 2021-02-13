@@ -554,12 +554,12 @@ getNetworkLinksDF <- function(links.df, network.nodes.df){
 #' @param tweets.df data.frame of tweet messages and users
 #' @param exlclude_hashtags default FALSE, whether to include hashtags as nodes in network
 #'
-#' @return networkd.df dataframe of interaction network
+#' @return list containing visualisation netwrork and the network.nodes dataframe of interaction network
 #'
 #' @export
 getTweetsInteractionNetwork <- function(tweets.df, exlclude_hashtags=FALSE){
   # get links from tweets
-  links.df <- getHastagUserLinks(tweets.df)
+  links.df <- getHastagUserLinks(tweets.df, exlclude_hashtags)
   # get nodes df from links
   network.nodes.df <- getNetworkNodesDF(tweets.df,links.df)
   # create network where nodes are ids (this is required for VisNetwork)
@@ -578,7 +578,9 @@ getTweetsInteractionNetwork <- function(tweets.df, exlclude_hashtags=FALSE){
                             Shiny.onInputChange('current_node_id', nodes.nodes);
                             ;}")
 
-  return(network.df)
+
+
+  return(list(network=network.df, network.nodes=network.nodes.df))
 
 }
 
