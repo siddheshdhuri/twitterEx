@@ -225,7 +225,8 @@ getUserData <- function(userFile){
 #'
 #' @export
 getUserTweetsDataFrame <- function(usernames){
-  print(usernames)
+
+  tweetid <- c()
   tweettext <- c()
   user <- c()
   tweetcreated <- c()
@@ -247,6 +248,9 @@ getUserTweetsDataFrame <- function(usernames){
 
     user <- c(user, rep(username,length(tweettext)))
 
+    tweetid <- c(tweetid,
+                 unlist(sapply(tweets, function(x) x$getId())))
+
     tweetcreated <- c(tweetcreated,
                       unlist(lapply(tweets, function(x) as.character(x$getCreated()))))
 
@@ -266,7 +270,8 @@ getUserTweetsDataFrame <- function(usernames){
 
   options(stringsAsFactors = FALSE)
 
-  tweets.df <- as.data.frame(cbind(tweet=tweettext,
+  tweets.df <- as.data.frame(cbind(tweetid=tweetid,
+                                   tweet=tweettext,
                                    user = user,
                                    tweetcreated=tweetcreated,
                                    tweetdate = tweetdate,
